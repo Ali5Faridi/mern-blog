@@ -2,12 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import mongoose, { Mongoose } from 'mongoose';
 import User from './models/User.js';
+import post from './models/Post.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import multer from 'multer';
-const uploadMiddleware = multer({dest: 'upload/'});
+import fs from 'fs';
+const uploadMiddleware = multer({dest: 'uploads/'});
+
 
 
 const salt = bcrypt.genSaltSync(10);
@@ -72,8 +75,23 @@ app.post('/logout', (req, res) => {
     res.clearCookie('token', '').json('ok');
 } );    
 
-app.post('/post', uploadMiddleware.single('file') , (req, res) => {
-res.json({files:req.file});
+app.post('/post', uploadMiddleware.single('file') ,async (req, res) => {
+    const{originalname, path} =req.file;
+    const parts = originalname.split('.');
+    const ext = parts[parts.length - 1];
+    const newPath = path + '.' + ext;
+    fs.renameSync(path, newPath);
+    
+    const {title, summary, content} = req.body;
+ const postDoc = await post.create({
+        title,
+        summary,
+        content,
+        cover: newPath,
+
+  })
+
+res.json({postDoc});
 });
 
 app.listen(4000, () => {
