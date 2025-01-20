@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import multer from 'multer';
+const uploadMiddleware = multer({dest: 'upload/'});
+
 
 const salt = bcrypt.genSaltSync(10);
 const secret = 'hdcksNDSL5@fsr345ccQWDyzrrthrsthsr'
@@ -68,6 +71,10 @@ app.get('/profile', (req, res) => {
 app.post('/logout', (req, res) => {
     res.clearCookie('token', '').json('ok');
 } );    
+
+app.post('/post', uploadMiddleware.single('file') , (req, res) => {
+res.json({files:req.file});
+});
 
 app.listen(4000, () => {
   console.log('Server is listening on port 4000');
