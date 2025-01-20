@@ -5,6 +5,7 @@ import User from './models/User.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 const salt = bcrypt.genSaltSync(10);
 const secret = 'hdcksNDSL5@fsr345ccQWDyzrrthrsthsr'
@@ -16,6 +17,7 @@ dotenv.config();
 
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(express.json());
+app.use(cookieParser());
 
 mongoose.connect(process.env.MONGO_CONNECTION);
 
@@ -43,7 +45,10 @@ app.post('/login', async (req, res) => {
     // logged in
     jwt.sign({username, id:userDoc. _id}, secret, {}, (error, token)=> {
      if (error) throw error;{
-         res.cookie('token', token).json('ok');
+         res.cookie('token', token).json({
+            id: userDoc._id,
+            username,
+         });
      }
     })
 
@@ -51,7 +56,18 @@ app.post('/login', async (req, res) => {
         res.status(400).json('wrong credentials');
     }
 });
-    
+
+app.get('/profile', (req, res) => {
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, (error, info) => {
+   if (error) throw error;
+   res.json(info);
+    });
+});
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('token', '').json('ok');
+} );    
 
 app.listen(4000, () => {
   console.log('Server is listening on port 4000');
