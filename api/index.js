@@ -9,23 +9,25 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import fs from 'fs';
+
 const uploadMiddleware = multer({dest: 'uploads/'});
 
 
-
+dotenv.config();
 const salt = bcrypt.genSaltSync(10);
-const secret = 'hdcksNDSL5@fsr345ccQWDyzrrthrsthsr'
+const secret = process.env.SECRET
 
 
 const app = express();
-dotenv.config();
+
 
 
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static('uploads'));
 
-mongoose.connect(process.env.MONGO_CONNECTION);
+mongoose.connect(process.env.MONGOOSE_CONNECT);
 
 
 // Register
@@ -81,20 +83,35 @@ app.post('/post', uploadMiddleware.single('file') ,async (req, res) => {
     const ext = parts[parts.length - 1];
     const newPath = path + '.' + ext;
     fs.renameSync(path, newPath);
-    
-    const {title, summary, content} = req.body;
- const postDoc = await post.create({
+
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, async (error, info) => {
+        if (error) throw error;
+        const {title, summary, content} = req.body;
+    const postDoc = await post.create({
         title,
         summary,
         content,
         cover: newPath,
+        author:info.id,
 
-  })
+      });
+        res.json(postDoc);
+         });
 
-res.json({postDoc});
+});
+
+   
+app.get('/post', async (req, res) => {
+    res.json(
+        await post.find()
+        .populate('author',['username'])
+        .sort({createdAt: -1})
+        .limit(10)
+    );
 });
 
 app.listen(4000, () => {
-  console.log('Server is listening on port 4000');
+  console.log('Server is listening on port , http://localhost:4000');
 });
 
