@@ -1,7 +1,4 @@
 
-
-
-
 import React from 'react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -44,5 +41,4 @@ function Post({_id, title, summary, createdAt, cover, content, author }) {
 }
 
 export default Post;
-
 

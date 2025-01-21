@@ -101,7 +101,42 @@ app.post('/post', uploadMiddleware.single('file') ,async (req, res) => {
          });
 });
 
-   
+app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
+    let newPath = null;
+  
+    if(req.file){
+        const{originalname, path} =req.file;
+        const parts = originalname.split('.');
+        const ext = parts[parts.length - 1];
+        newPath = path + '.' + ext;
+        fs.renameSync(path, newPath);
+    }
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, async (error, info) => {
+        if (error) throw error;
+        const {id, title, summary, content} = req.body;
+        const postDoc = await post.findById(id);
+        // const isAuthor = JSON.stringify() (postDoc.author) === JSON.stringify (info.id);
+        const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
+
+        if(!isAuthor){
+           return res.status(403).json('not allowed');
+           
+        }
+
+       await postDoc.updateOne({
+        title,
+        summary,
+        content,
+        cover: newPath ? newPath : postDoc.cover,
+        });
+
+        res.json(postDoc);
+         });
+
+
+});
+
 app.get('/post', async (req, res) => {
     res.json(
         await post.find()
