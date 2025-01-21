@@ -26,6 +26,7 @@ app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static(__dirname +'uploads'));
 
 mongoose.connect(process.env.MONGOOSE_CONNECT);
 
