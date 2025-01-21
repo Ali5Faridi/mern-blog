@@ -153,3 +153,7 @@ div.post-page a.edit-btn{
 a svg{
   height:20px;
 }
+img{
+  max-height: 400px;
+  width: 100%;
+}
