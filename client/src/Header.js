@@ -31,12 +31,12 @@ function Header() {
  
   return (
     <header>
-    <Link to ="/" className='logo'>MyBlog</Link>
+    <Link to ="/" className='logo'>Home</Link>
    <nav>
     {username && (
       <>
-      <Link to="/create">Create New Post</Link>
-      <a onClick={logout}>Logout</a>
+      <Link to="/create">New Article</Link>
+      <a onClick={logout}>Exit</a>
       
       </>
     )}
